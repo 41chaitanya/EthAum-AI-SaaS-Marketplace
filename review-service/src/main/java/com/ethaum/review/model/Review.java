@@ -32,4 +32,11 @@ public class Review {
     private String comment;
 
     private LocalDateTime createdAt;
+
+    // AI Verification fields
+    private int verificationScore;
+
+    private String verificationStatus; // VERIFIED, NEEDS_REVIEW
+
+    private LocalDateTime verifiedAt;
 }

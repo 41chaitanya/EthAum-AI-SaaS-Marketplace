@@ -36,4 +36,16 @@ public class ReviewController {
     public List<ReviewResponse> reviews(@PathVariable Long launchId) {
         return service.getReviews(launchId);
     }
+
+    // Get only verified reviews
+    @GetMapping("/launch/{launchId}/verified")
+    public List<ReviewResponse> verifiedReviews(@PathVariable Long launchId) {
+        return service.getVerifiedReviews(launchId);
+    }
+
+    // Re-verify a specific review
+    @PostMapping("/{reviewId}/verify")
+    public VerificationResult verifyReview(@PathVariable Long reviewId) {
+        return service.verifyReview(reviewId);
+    }
 }

@@ -33,7 +33,30 @@ public class Launch {
 
     private int commentsCount;
 
+    private int viewCount;
+
     private String ownerEmail;
 
     private LocalDateTime launchedAt;
+
+    // AI Template fields
+    private String generatedTagline;
+
+    @Column(length = 2000)
+    private String generatedDescription;
+
+    private boolean aiAssisted;
+
+    // Virality fields
+    private double viralityScore;
+
+    @Column(name = "is_trending")
+    private boolean trending;
+
+    private LocalDateTime lastScoreUpdate;
+
+    // Badge fields
+    private String badge;
+
+    private LocalDateTime badgeAssignedAt;
 }
