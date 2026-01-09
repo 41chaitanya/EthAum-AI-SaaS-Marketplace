@@ -1,228 +1,430 @@
-# Frontend Development Guide
+# EthAum Frontend Development Guide
 
 ## Overview
-This guide helps frontend developers understand what to build for the EthAum platform.
+Complete API documentation for frontend developers to build the EthAum platform.
+
+---
+
+## Services & Ports
+
+| Service | Port | Description |
+|---------|------|-------------|
+| Auth Service | 8081 | User registration, login, JWT |
+| Startup Service | 8082 | Startup profile management |
+| Launch Service | 8083 | Product launches & upvotes |
+| Review Service | 8084 | Enterprise reviews & ratings |
+| Credibility Service | 8085 | Trust score calculation |
+| Deal Service | 8086 | Pilot/POC marketplace |
 
 ---
 
 ## Tech Stack (Recommended)
-- React 18+
+- React 18+ / Next.js
 - React Router DOM
 - Axios (API calls)
 - GSAP (animations)
-- Three.js / React Three Fiber (3D background - optional)
+- Tailwind CSS
 
 ---
 
-## Pages to Build
+## 1️⃣ AUTH SERVICE (Port 8081)
 
-### 1. Landing Page (`/`)
-**Purpose:** Welcome page for visitors
-
-**Components:**
-- Hero section with tagline
-- Features section (For Startups, For Enterprises, Collaborate)
-- CTA buttons (Get Started, Sign In)
-
-**Behavior:**
-- If logged in → Show "Go to Profile" button
-- If not logged in → Show "Get Started" and "Sign In" buttons
-
----
-
-### 2. Register Page (`/register`)
-**Purpose:** New user registration
-
-**Form Fields:**
-| Field | Type | Validation |
-|-------|------|------------|
-| Role Selection | Radio/Toggle | Required (STARTUP or ENTERPRISE) |
-| Email | email input | Required, valid email format |
-| Password | password input | Required, min 6 chars recommended |
-
-**UI Elements:**
-- Role selector (two buttons: 🚀 Startup, 🏢 Enterprise)
-- Email input
-- Password input
-- "Create Account" button
-- Link to Login page
-
-**API Call:**
-```javascript
+### Register User
+```http
 POST /auth/register
-Body: { email, password, role }
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "Pass@123",
+  "role": "STARTUP"  // or "ENTERPRISE"
+}
 ```
+**Response:** `"User registered successfully"`
 
-**On Success:** Redirect to `/login`
-**On Error:** Show error message, shake animation
-
----
-
-### 3. Login Page (`/login`)
-**Purpose:** User authentication
-
-**Form Fields:**
-| Field | Type | Validation |
-|-------|------|------------|
-| Email | email input | Required |
-| Password | password input | Required |
-
-**UI Elements:**
-- Email input
-- Password input
-- "Sign In" button
-- Link to Register page
-
-**API Call:**
-```javascript
+### Login
+```http
 POST /auth/login
-Body: { email, password }
-Response: { token }
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "Pass@123"
+}
+```
+**Response:**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiJ9..."
+}
 ```
 
-**On Success:** 
-1. Store token in localStorage
-2. Decode JWT to get user info
-3. Redirect to `/profile`
-
-**On Error:** Show error message, shake animation
+### JWT Token Structure
+```javascript
+// Decode: JSON.parse(atob(token.split('.')[1]))
+{
+  "sub": "john@example.com",  // email
+  "role": "STARTUP",          // STARTUP | ENTERPRISE
+  "iat": 1767953741,
+  "exp": 1768040141
+}
+```
 
 ---
 
-### 4. Profile Page (`/profile`)
-**Purpose:** User profile display (LinkedIn-style)
+## 2️⃣ STARTUP SERVICE (Port 8082)
 
-**Layout:**
+### Create Startup Profile
+```http
+POST /startups
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "name": "My Startup",
+  "website": "https://mystartup.com",
+  "industry": "FinTech",
+  "fundingStage": "Series A",
+  "arrRange": "1M-5M",
+  "description": "AI-powered fintech solution"
+}
 ```
-┌─────────────────────────────────────┐
-│         Cover Photo (gradient)       │
-├─────────────────────────────────────┤
-│ ┌───┐                               │
-│ │ A │  Username                     │
-│ └───┘  🚀 STARTUP badge             │
-│                                     │
-│ 📧 email  📍 location  📅 joined    │
-├─────────────────────────────────────┤
-│  Connections │ Projects │ Collabs   │
-│      0       │    0     │    0      │
-├─────────────────────────────────────┤
-│ About                               │
-│ Bio text here...                    │
-└─────────────────────────────────────┘
+**Response:**
+```json
+{
+  "id": 1,
+  "name": "My Startup",
+  "website": "https://mystartup.com",
+  "industry": "FinTech",
+  "fundingStage": "Series A",
+  "arrRange": "1M-5M",
+  "description": "AI-powered fintech solution"
+}
 ```
 
-**Data from JWT Token:**
-- `sub` → email
-- `role` → STARTUP or ENTERPRISE
-
-**Protected Route:** Redirect to `/login` if no token
+### Get My Startup
+```http
+GET /startups/me
+Authorization: Bearer <token>
+```
 
 ---
 
-### 5. Navbar (Component)
-**Elements:**
-- Logo (left)
-- Navigation links (center/right)
-- Theme toggle button
-- User avatar (when logged in)
+## 3️⃣ LAUNCH SERVICE (Port 8083)
 
-**States:**
-| Logged Out | Logged In |
-|------------|-----------|
-| Login link | Home link |
-| Register button | Profile link |
-| | Logout button |
-| | User avatar |
+### Launch a Product
+```http
+POST /launches
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "startupId": 1,
+  "productName": "EthAum AI",
+  "tagline": "AI-powered marketplace",
+  "description": "Connect startups with enterprises",
+  "category": "AI/ML"
+}
+```
+**Response:**
+```json
+{
+  "id": 1,
+  "productName": "EthAum AI",
+  "tagline": "AI-powered marketplace",
+  "category": "AI/ML",
+  "upvotes": 0
+}
+```
+
+### Upvote a Launch
+```http
+POST /launches/{id}/upvote
+```
+**No body required, no auth required**
+
+### Get Trending Launches
+```http
+GET /launches/trending
+```
+**Response:**
+```json
+[
+  {
+    "id": 1,
+    "productName": "EthAum AI",
+    "tagline": "AI-powered marketplace",
+    "category": "AI/ML",
+    "upvotes": 15
+  }
+]
+```
+
+---
+
+## 4️⃣ REVIEW SERVICE (Port 8084)
+
+### Add Review (Enterprise only)
+```http
+POST /reviews
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "launchId": 1,
+  "rating": 5,
+  "comment": "Amazing product!",
+  "reviewerRole": "CTO",
+  "companySize": "ENTERPRISE"
+}
+```
+**Response:**
+```json
+{
+  "rating": 5,
+  "comment": "Amazing product!",
+  "reviewerRole": "CTO",
+  "companySize": "ENTERPRISE"
+}
+```
+
+### Get Reviews for Launch
+```http
+GET /reviews/launch/{launchId}
+```
+**Response:**
+```json
+[
+  {
+    "rating": 5,
+    "comment": "Amazing product!",
+    "reviewerRole": "CTO",
+    "companySize": "ENTERPRISE"
+  }
+]
+```
+
+**Reviewer Roles:** `CTO`, `CXO`, `MANAGER`, `VP`
+**Company Sizes:** `SMB`, `MID`, `ENTERPRISE`
+
+---
+
+## 5️⃣ CREDIBILITY SERVICE (Port 8085)
+
+### Calculate Credibility Score
+```http
+POST /credibility/calculate?startupId=1&launchUpvotes=10&avgRating=4.5&enterpriseReviews=3
+```
+**Response:**
+```json
+{
+  "startupId": 1,
+  "score": 93.0,
+  "level": "Enterprise Ready",
+  "badge": "Enterprise Ready"
+}
+```
+
+### Get Credibility Score
+```http
+GET /credibility/startup/{startupId}
+```
+
+**Score Formula:**
+```
+score = (launchUpvotes × 0.3) + (avgRating × 10) + (enterpriseReviews × 15)
+```
+
+**Levels & Badges:**
+| Score | Level | Badge |
+|-------|-------|-------|
+| 0-30 | Emerging | EthAum Verified |
+| 31-60 | Growing | High Growth Startup |
+| 61-100 | Enterprise Ready | Enterprise Ready |
+
+---
+
+## 6️⃣ DEAL SERVICE (Port 8086)
+
+### Create Deal/Pilot (STARTUP only)
+```http
+POST /deals
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "startupId": 1,
+  "title": "Free 30-Day Pilot",
+  "description": "Try our AI solution free",
+  "targetIndustry": "FinTech",
+  "durationDays": 30,
+  "maxSlots": 5
+}
+```
+**Response:**
+```json
+{
+  "id": 1,
+  "title": "Free 30-Day Pilot",
+  "status": "OPEN",
+  "durationDays": 30,
+  "maxSlots": 5
+}
+```
+
+### Get Open Deals
+```http
+GET /deals/open
+```
+
+### Apply to Deal (ENTERPRISE only)
+```http
+POST /deals/{id}/apply
+Authorization: Bearer <token>
+```
+
+### Accept Application (STARTUP only)
+```http
+POST /deals/{dealId}/applications/{appId}/accept
+Authorization: Bearer <token>
+```
+
+**Deal Status:** `OPEN`, `CLOSED`
+**Application Status:** `APPLIED`, `ACCEPTED`, `REJECTED`
 
 ---
 
 ## Authentication Flow
 
 ```
-┌─────────┐     ┌─────────┐     ┌─────────┐
-│ Register │ --> │  Login  │ --> │ Profile │
-└─────────┘     └─────────┘     └─────────┘
-                     │
-                     ▼
-              Store JWT Token
-              in localStorage
-                     │
-                     ▼
-              Decode token to
-              get user info
+┌──────────┐     ┌─────────┐     ┌─────────────┐
+│ Register │ --> │  Login  │ --> │  Dashboard  │
+└──────────┘     └─────────┘     └─────────────┘
+                      │
+                      ▼
+               Store JWT Token
+               localStorage
+                      │
+                      ▼
+               Decode for role
+               STARTUP | ENTERPRISE
 ```
 
 ---
 
-## State Management
+## Role-Based Access
 
-### Auth Context
-```javascript
-{
-  user: { email, role } | null,
-  token: string | null,
-  isAuthenticated: boolean,
-  login: (token) => void,
-  logout: () => void
-}
-```
-
-### Theme Context
-```javascript
-{
-  isDark: boolean,
-  toggleTheme: () => void
-}
-```
+| Feature | STARTUP | ENTERPRISE |
+|---------|---------|------------|
+| Create Startup Profile | ✅ | ❌ |
+| Launch Product | ✅ | ❌ |
+| Add Review | ❌ | ✅ |
+| Create Deal/Pilot | ✅ | ❌ |
+| Apply to Deal | ❌ | ✅ |
+| Accept Application | ✅ | ❌ |
+| Upvote Launch | ✅ | ✅ |
+| View Trending | ✅ | ✅ |
 
 ---
 
-## JWT Token Handling
+## Axios Setup
 
-**Store Token:**
-```javascript
-localStorage.setItem('token', token);
-```
-
-**Decode Token:**
-```javascript
-const payload = JSON.parse(atob(token.split('.')[1]));
-// payload = { sub: "email", role: "STARTUP", iat: ..., exp: ... }
-```
-
-**Check Expiry:**
-```javascript
-const isExpired = payload.exp * 1000 < Date.now();
-```
-
-**Logout:**
-```javascript
-localStorage.removeItem('token');
-```
-
----
-
-## API Integration
-
-**Base URL:** `http://localhost:8081`
-
-**Axios Setup:**
 ```javascript
 import axios from 'axios';
 
-const api = axios.create({
-  baseURL: 'http://localhost:8081',
-  headers: { 'Content-Type': 'application/json' }
-});
+// Service instances
+const authApi = axios.create({ baseURL: 'http://localhost:8081' });
+const startupApi = axios.create({ baseURL: 'http://localhost:8082' });
+const launchApi = axios.create({ baseURL: 'http://localhost:8083' });
+const reviewApi = axios.create({ baseURL: 'http://localhost:8084' });
+const credibilityApi = axios.create({ baseURL: 'http://localhost:8085' });
+const dealApi = axios.create({ baseURL: 'http://localhost:8086' });
 
-// Add token to requests
-api.interceptors.request.use(config => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+// Auth interceptor
+const addAuthInterceptor = (api) => {
+  api.interceptors.request.use(config => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  });
+};
+
+[startupApi, launchApi, reviewApi, dealApi].forEach(addAuthInterceptor);
+```
+
+---
+
+## Pages to Build
+
+### Public Pages
+- `/` - Landing page
+- `/login` - Login form
+- `/register` - Registration with role selection
+- `/trending` - Trending launches
+- `/deals` - Open pilot deals
+
+### Protected Pages (Auth Required)
+- `/profile` - User profile
+- `/dashboard` - Role-based dashboard
+- `/startup/create` - Create startup (STARTUP only)
+- `/launch/create` - Launch product (STARTUP only)
+- `/deals/create` - Create pilot deal (STARTUP only)
+- `/review/add` - Add review (ENTERPRISE only)
+
+---
+
+## UI Components
+
+### Role Badge
+```jsx
+const RoleBadge = ({ role }) => (
+  <span className={role === 'STARTUP' ? 'bg-purple-500' : 'bg-blue-500'}>
+    {role === 'STARTUP' ? '🚀 Startup' : '🏢 Enterprise'}
+  </span>
+);
+```
+
+### Credibility Badge
+```jsx
+const CredibilityBadge = ({ level, badge }) => {
+  const colors = {
+    'Emerging': 'bg-gray-500',
+    'Growing': 'bg-yellow-500',
+    'Enterprise Ready': 'bg-green-500'
+  };
+  return <span className={colors[level]}>{badge}</span>;
+};
+```
+
+### Deal Status
+```jsx
+const DealStatus = ({ status }) => (
+  <span className={status === 'OPEN' ? 'text-green-500' : 'text-red-500'}>
+    {status}
+  </span>
+);
+```
+
+---
+
+## Error Handling
+
+```javascript
+try {
+  const response = await authApi.post('/auth/login', credentials);
+  // success
+} catch (error) {
+  if (error.response?.status === 403) {
+    // Invalid credentials
+  } else if (error.response?.status === 400) {
+    // Validation error
+  } else {
+    // Server error
   }
-  return config;
-});
+}
 ```
 
 ---
@@ -230,70 +432,67 @@ api.interceptors.request.use(config => {
 ## Theme Support
 
 **Dark Theme (Default):**
-- Background: #000000
-- Card: #1a1a1a
-- Text: #ffffff
-- Accent: Instagram gradient (#405DE6 → #833AB4 → #E1306C)
+```css
+--bg-primary: #000000;
+--bg-card: #1a1a1a;
+--text-primary: #ffffff;
+--accent: linear-gradient(45deg, #405DE6, #833AB4, #E1306C);
+```
 
 **Light Theme:**
-- Background: #f0f2f5
-- Card: #ffffff
-- Text: #000000
-
----
-
-## Animations (GSAP)
-
-**Page Enter:**
-```javascript
-gsap.from(element, { y: 40, opacity: 0, duration: 0.6 });
-```
-
-**Error Shake:**
-```javascript
-gsap.to(element, { x: [-8, 8, -8, 8, 0], duration: 0.4 });
-```
-
-**Stagger Children:**
-```javascript
-gsap.from(children, { y: 30, opacity: 0, stagger: 0.1 });
+```css
+--bg-primary: #f0f2f5;
+--bg-card: #ffffff;
+--text-primary: #000000;
 ```
 
 ---
 
-## Folder Structure (Recommended)
+## Complete User Flow
 
+### Startup Journey
 ```
-src/
-├── components/
-│   ├── Navbar.jsx
-│   ├── ThemeToggle.jsx
-│   └── ThreeBackground.jsx (optional)
-├── context/
-│   ├── AuthContext.jsx
-│   └── ThemeContext.jsx
-├── pages/
-│   ├── Home.jsx
-│   ├── Login.jsx
-│   ├── Register.jsx
-│   └── Profile.jsx
-├── App.jsx
-├── main.jsx
-└── index.css
+Register (STARTUP) → Login → Create Startup Profile → Launch Product 
+→ Get Upvotes → Get Reviews → Credibility Score → Create Pilot Deal 
+→ Accept Enterprise Applications
+```
+
+### Enterprise Journey
+```
+Register (ENTERPRISE) → Login → Browse Trending Launches 
+→ Add Reviews → Browse Open Deals → Apply to Pilots
 ```
 
 ---
 
 ## Checklist
 
-- [ ] Landing page with hero section
+### Auth
 - [ ] Register page with role selection
-- [ ] Login page with form
-- [ ] Profile page (LinkedIn-style)
-- [ ] Navbar with auth state
-- [ ] Dark/Light theme toggle
-- [ ] JWT token storage & decoding
+- [ ] Login page
+- [ ] JWT storage & decoding
 - [ ] Protected routes
-- [ ] GSAP animations
-- [ ] Error handling with visual feedback
+- [ ] Logout functionality
+
+### Startup Features
+- [ ] Create startup profile
+- [ ] Launch product
+- [ ] View my startup
+- [ ] Create pilot deal
+- [ ] Accept applications
+
+### Enterprise Features
+- [ ] Browse launches
+- [ ] Add reviews
+- [ ] Browse deals
+- [ ] Apply to pilots
+
+### Common Features
+- [ ] Trending launches page
+- [ ] Upvote functionality
+- [ ] Credibility display
+- [ ] Open deals listing
+- [ ] Dark/Light theme
 - [ ] Responsive design
+- [ ] Loading states
+- [ ] Error handling
