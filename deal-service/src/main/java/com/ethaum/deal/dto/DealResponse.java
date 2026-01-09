@@ -10,6 +10,7 @@ public class DealResponse {
     private Long id;
     private String title;
     private String status;
+    private String targetIndustry;
     private int durationDays;
     private int maxSlots;
 }

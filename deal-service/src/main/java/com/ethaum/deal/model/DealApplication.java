@@ -22,7 +22,16 @@ public class DealApplication {
 
     private String enterpriseEmail;
 
+    private String enterpriseIndustry;
+
+    private String enterpriseCompanySize;
+
     private String status; // APPLIED, ACCEPTED, REJECTED
+
+    // AI Matchmaking
+    private int matchScore;
+
+    private String matchLabel;
 
     private LocalDateTime appliedAt;
 }

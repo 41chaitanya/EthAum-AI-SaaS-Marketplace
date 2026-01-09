@@ -9,4 +9,8 @@ public interface DealApplicationRepository
         extends JpaRepository<DealApplication, Long> {
 
     List<DealApplication> findByDealId(Long dealId);
+
+    List<DealApplication> findByDealIdOrderByMatchScoreDesc(Long dealId);
+
+    List<DealApplication> findByEnterpriseEmail(String email);
 }

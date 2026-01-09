@@ -25,7 +25,11 @@ public class Deal {
     @Column(length = 2000)
     private String description;
 
+    private String startupIndustry;
+
     private String targetIndustry;
+
+    private double startupCredibilityScore;
 
     private int durationDays;
 

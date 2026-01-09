@@ -14,10 +14,7 @@ public class DealController {
     private final DealService service;
     private final JwtHeaderUtil jwtUtil;
 
-    public DealController(
-            DealService service,
-            JwtHeaderUtil jwtUtil
-    ) {
+    public DealController(DealService service, JwtHeaderUtil jwtUtil) {
         this.service = service;
         this.jwtUtil = jwtUtil;
     }
@@ -38,10 +35,11 @@ public class DealController {
         return service.createDeal(req, jwtUtil.extractEmail(token));
     }
 
-    // ENTERPRISE applies
+    // ENTERPRISE applies with AI matchmaking
     @PostMapping("/{id}/apply")
-    public void apply(
+    public ApplicationResponse apply(
             @PathVariable Long id,
+            @RequestBody ApplyDealRequest req,
             @RequestHeader("Authorization") String auth
     ) {
         String token = auth.replace("Bearer ", "");
@@ -51,7 +49,21 @@ public class DealController {
             throw new RuntimeException("Only enterprises can apply");
         }
 
-        service.applyToDeal(id, jwtUtil.extractEmail(token));
+        return service.applyToDeal(
+                id, 
+                jwtUtil.extractEmail(token),
+                req.getEnterpriseIndustry(),
+                req.getEnterpriseCompanySize()
+        );
+    }
+
+    // Get applications for a deal (sorted by match score)
+    @GetMapping("/{dealId}/applications")
+    public List<ApplicationResponse> getApplications(
+            @PathVariable Long dealId,
+            @RequestHeader("Authorization") String auth
+    ) {
+        return service.getApplications(dealId);
     }
 
     // STARTUP accepts enterprise
@@ -62,11 +74,7 @@ public class DealController {
             @RequestHeader("Authorization") String auth
     ) {
         String token = auth.replace("Bearer ", "");
-        service.acceptApplication(
-                dealId,
-                appId,
-                jwtUtil.extractEmail(token)
-        );
+        service.acceptApplication(dealId, appId, jwtUtil.extractEmail(token));
     }
 
     // Public
